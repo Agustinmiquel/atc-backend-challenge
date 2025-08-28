@@ -20,6 +20,8 @@ services:
       - ./mock:/usr/src/app/mock
     ports:
       - 4000:4000
+    depends_on:
+      - api
     environment:
       EVENT_INTERVAL_SECONDS: 10
       REQUESTS_PER_MINUTE: 60

@@ -1,3 +1,4 @@
+import { Cache } from 'cache-manager';
 import * as moment from 'moment';
 
 import { AlquilaTuCanchaClient } from '../../domain/ports/aquila-tu-cancha.client';
@@ -7,16 +8,23 @@ import { Court } from '../model/court';
 import { Slot } from '../model/slot';
 import { GetAvailabilityHandler } from './get-availability.handler';
 
+const mockCacheManager: Partial<Cache> = {
+  get: jest.fn(),
+  set: jest.fn(),
+};
+
 describe('GetAvailabilityHandler', () => {
   let handler: GetAvailabilityHandler;
   let client: FakeAlquilaTuCanchaClient;
 
   beforeEach(() => {
     client = new FakeAlquilaTuCanchaClient();
-    handler = new GetAvailabilityHandler(client);
+    handler = new GetAvailabilityHandler(client, mockCacheManager);
   });
 
   it('returns the availability', async () => {
+    // simulacion del cache miss
+    (mockCacheManager.get as jest.Mock).mockResolvedValueOnce(null);
     client.clubs = {
       '123': [{ id: 1 }],
     };
@@ -34,6 +42,7 @@ describe('GetAvailabilityHandler', () => {
     );
 
     expect(response).toEqual([{ id: 1, courts: [{ id: 1, available: [] }] }]);
+    expect(mockCacheManager.get).toHaveBeenCalled();
   });
 });
 
